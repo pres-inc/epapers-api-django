@@ -1,0 +1,11 @@
+*.pyc
+.coverage
+.envrc
+.pytest_cache
+coverage.xml
+htmlcov
+node_modules
+.idea
+.DS_Store
+
+epaper_api_v1/migrations/
