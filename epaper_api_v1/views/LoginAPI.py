@@ -23,7 +23,7 @@ class LoginAPI(generics.RetrieveAPIView):
         login_limit = datetime.datetime.now().timestamp() + login_time
         serializer.data.update(login_limit=login_limit)
         result_data = {
-            "login_limit": login_limit,
+            "login_limit": int(login_limit),
             "id": serializer.data["id"],
             "name": serializer.data["name"],
             "mail": serializer.data["mail"],
