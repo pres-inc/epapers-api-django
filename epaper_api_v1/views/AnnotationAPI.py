@@ -12,6 +12,8 @@ class AnnotationAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
     serializer_class = AnnotationSerializer
 
     def get_queryset(self, paper_id):
+        # y0 の小さい順の方がいいけどなー
+        # get team/paper/info で取得するから一旦パス
         return self.queryset.filter(paper=paper_id).order_by("created_at").reverse()
 
     def list(self, request):
@@ -19,7 +21,7 @@ class AnnotationAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         queryset = self.filter_queryset(self.get_queryset(paper_id))
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response({"papers":serializer.data})
+        return Response({"annotations":serializer.data})
 
     def create(self, request):
 
