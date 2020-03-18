@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 import threading
+import shutil
 
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -74,3 +75,5 @@ def create_paperImage_and_upload(save_dir_path, pdf_file_path, team_id, paper_id
         bucket.upload_file(image_path, s3key)
         url = 'https://s3-ap-northeast-1.amazonaws.com/{}/{}'.format(AWS_S3_BUCKET_NAME, s3key)
         PaperImage.objects.create(page=i, url=url, paper_id=paper_id)
+    # save_dir_path以下のファイルやフォルダを全て削除
+    shutil.rmtree(save_dir_path)
