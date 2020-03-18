@@ -37,7 +37,7 @@ class Annotation(models.Model):
 
 class Comment(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="comment_user_id")
-    comment = models.CharField(max_length=500, default="")
-    image_url = models.CharField(max_length=500, default="")
+    comment = models.CharField(max_length=500, default="", blank=True)
+    image_url = models.CharField(max_length=500, default="", blank=True)
     annotation = models.ForeignKey('Annotation', on_delete=models.CASCADE, related_name="annotation_id")
     created_at = models.DateTimeField(auto_now_add=True)    

@@ -9,7 +9,7 @@ from pdf2image import convert_from_path
 
 from ..models import Paper, PaperImage
 from ..serializers.PaperSerializer import PaperSerializer
-from ..consts import bucket, AWS_S3_BUCKET_NAME
+from ..consts import bucket, bucket_location, AWS_S3_BUCKET_NAME
 
 
 
@@ -79,7 +79,7 @@ def create_paperImage_and_upload(save_dir_path, pdf_file_path, team_id, paper_id
         image.save(image_path, quality=95)
         s3key = "paper/" + str(team_id) + "/" + title + "/" + now.strftime('%Y-%m-%d-%H-%M-%S-%f') + "_" + str(i) + ".jpg"
         bucket.upload_file(image_path, s3key)
-        url = 'https://s3-ap-northeast-1.amazonaws.com/{}/{}'.format(AWS_S3_BUCKET_NAME, s3key)
+        url = "https://s3-{0}.amazonaws.com/{1}/{2}".format(bucket_location['LocationConstraint'], AWS_S3_BUCKET_NAME, s3key)
         PaperImage.objects.create(page=i, url=url, paper_id=paper_id)
     # save_dir_path以下のファイルやフォルダを全て削除
     shutil.rmtree(save_dir_path)

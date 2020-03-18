@@ -11,5 +11,6 @@ node_modules
 epaper_api_v1/migrations/
 epaper_api_v1/pdf_files/*
 !.gitkeep
+epaper_api_v1/work_comment_image/*
 
 epaper_api_djange/settings.py
