@@ -1,14 +1,20 @@
 from rest_framework import serializers
 from ..models import Paper, User, Annotation, Comment
 
+class UserSerializerForComment(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'name', 'mail', 'color', 'team_id')
+
 
 class AnnotationCommentSerializer(serializers.ModelSerializer):
     user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     annotation_id = serializers.PrimaryKeyRelatedField(queryset=Annotation.objects.all())
     pk = serializers.SerializerMethodField()
+    user = UserSerializerForComment(read_only=True)
     class Meta:
         model = Comment
-        fields = ('pk', 'annotation_id', 'comment', 'image_url', 'user_id', 'created_at')
+        fields = ('pk', 'annotation_id', 'comment', 'image_url', 'user_id', 'created_at', 'user')
         read_only_fields = ('created_at', 'pk', )
 
     def create(self, validated_date):
