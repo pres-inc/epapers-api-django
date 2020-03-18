@@ -17,9 +17,15 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
     queryset = Paper.objects.all()
     serializer_class = PaperSerializer
 
-    def list(self, request):
+    def get_queryset(self, team_id):
+        return self.queryset.filter(team=team_id).order_by("created_at").reverse()
 
-        return Response({"papers":""})
+    def list(self, request):
+        team_id = request.GET.get('team_id', None)
+        queryset = self.filter_queryset(self.get_queryset(team_id))
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({"papers":serializer.data})
 
     def create(self, request):
         user_id = request.data.get("user_id", "tmp")

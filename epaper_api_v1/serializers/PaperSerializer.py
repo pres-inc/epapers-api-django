@@ -1,14 +1,20 @@
 from rest_framework import serializers
 from ..models import Paper, Team, User
 
+class UserSerializerForPaper(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'name', 'mail', 'color', 'team_id')
+
 
 class PaperSerializer(serializers.ModelSerializer):
     team_id = serializers.PrimaryKeyRelatedField(queryset=Team.objects.all())
     user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     pk = serializers.SerializerMethodField()
+    user = UserSerializerForPaper(read_only=True)
     class Meta:
         model = Paper
-        fields = ('pk', 'title', 'team_id', 'user_id', 'created_at')
+        fields = ('pk', 'title', 'team_id', 'user_id', 'created_at', 'user')
         read_only_fields = ('created_at', 'pk', )
 
     def create(self, validated_date):
