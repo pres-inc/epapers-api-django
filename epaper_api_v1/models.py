@@ -5,19 +5,20 @@ class Team(models.Model):
     name = models.CharField(max_length=100, default="New Team")
 
 class User(models.Model):
-   id = models.CharField(primary_key=True, max_length=100)
-   name = models.CharField(max_length=100, default="名無し")
-   mail = models.CharField(max_length=100)
-   password = models.CharField(max_length=100)
-   color = models.CharField(max_length=100, default="#FFFFFF")
-   team = models.ForeignKey('Team', on_delete=models.CASCADE, related_name="user_team_id")
-   is_owner = models.BooleanField(null=False, default=False)
-   created_at = models.DateTimeField(auto_now_add=True)
+    id = models.CharField(primary_key=True, max_length=100)
+    name = models.CharField(max_length=100, default="名無し")
+    mail = models.CharField(max_length=100)
+    password = models.CharField(max_length=100)
+    color = models.CharField(max_length=100, default="#FFFFFF")
+    team = models.ForeignKey('Team', on_delete=models.CASCADE, related_name="user_team_id")
+    is_owner = models.BooleanField(null=False, default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 class Paper(models.Model):
     title = models.CharField(max_length=100, default="New Paper")
     team = models.ForeignKey('Team', on_delete=models.CASCADE, related_name="paper_team_id")
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="paper_user_id")
+    created_at = models.DateTimeField(auto_now_add=True)
     thumbnail_url = models.CharField(max_length=300, default="") # 一旦使わない
     #auters = models.CharField(max_length=300, default="") # 一旦使わない
 

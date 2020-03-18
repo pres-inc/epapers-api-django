@@ -9,5 +9,6 @@ node_modules
 .DS_Store
 
 epaper_api_v1/migrations/
+epaper_api_v1/pdf_files/
 
 epaper_api_djange/settings.py
