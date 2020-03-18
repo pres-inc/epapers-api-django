@@ -18,7 +18,7 @@ class LoginAPI(generics.RetrieveAPIView):
         user = self.queryset.filter(mail=mail, password=password)
         # userが1人だけに絞れなかったらだめ
         if user.count() != 1:
-            return Response({"status":False, "details":"password != password_conf"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status":False, "details":"Please enter the correct email address and password."}, status=status.HTTP_400_BAD_REQUEST)
         serializer = self.get_serializer(user[0])
         login_limit = datetime.datetime.now().timestamp() + login_time
         serializer.data.update(login_limit=login_limit)
