@@ -29,6 +29,7 @@ class PaperImage(models.Model):
 
 class Annotation(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="annotation_user_id")
+    paper = models.ForeignKey('Paper', on_delete=models.CASCADE, related_name="annotation_paper_id", null=True, blank=True, default=None)
     memo = models.CharField(max_length=500, default="")
     coordinate = models.CharField(max_length=100, default="")
     page = models.IntegerField(default=0)
