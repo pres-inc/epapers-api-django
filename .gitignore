@@ -12,4 +12,4 @@ epaper_api_v1/migrations/
 epaper_api_v1/pdf_files/*
 !.gitkeep
 
-epaper_api_djange/settings.py
+epaper_api_django/settings.py
