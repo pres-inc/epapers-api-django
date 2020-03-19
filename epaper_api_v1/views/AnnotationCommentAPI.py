@@ -5,6 +5,7 @@ import uuid
 from rest_framework import generics, status
 from rest_framework.response import Response
 
+from .AuthTokenCheck import check_token
 from ..models import Comment
 from ..serializers.AnnotationCommentSerializer import AnnotationCommentSerializer
 from ..consts import bucket, bucket_location, AWS_S3_BUCKET_NAME
@@ -19,6 +20,10 @@ class AnnotationCommentAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         return self.queryset.filter(annotation=annotation_id).order_by("created_at")
 
     def list(self, request):
+        checked_result = check_token(request.META.get('HTTP_AUTH_TOKEN', None))
+        if not checked_result["status"]:
+            return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+
         annotation_id = request.GET.get('annotation_id', None)
         queryset = self.filter_queryset(self.get_queryset(annotation_id))
 
@@ -26,6 +31,10 @@ class AnnotationCommentAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         return Response({"comments":serializer.data})
 
     def create(self, request):
+        checked_result = check_token(request.META.get('HTTP_AUTH_TOKEN', None))
+        if not checked_result["status"]:
+            return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+            
         comment = request.data.get("comment", None)
         image_base64 = request.data.get("image_base64", None)
         if (comment is None or comment == "") and (image_base64 is None or image_base64 == ""):

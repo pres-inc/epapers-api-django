@@ -17,6 +17,11 @@ class User(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+class Token(models.Model):
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="token_user_id")
+    token = models.CharField(max_length=40)
+    access_datetime = models.DateTimeField(auto_now=True)
+
 class Paper(models.Model):
     title = models.CharField(max_length=100, default="New Paper")
     team = models.ForeignKey('Team', on_delete=models.CASCADE, related_name="paper_team_id")

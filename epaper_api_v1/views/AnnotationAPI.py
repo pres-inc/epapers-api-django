@@ -3,6 +3,7 @@ import os
 from rest_framework import generics, status
 from rest_framework.response import Response
 
+from .AuthTokenCheck import check_token
 from ..models import Annotation
 from ..serializers.AnnotationSerializer import AnnotationSerializer
 
@@ -17,6 +18,10 @@ class AnnotationAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         return self.queryset.filter(paper=paper_id).order_by("created_at").reverse()
 
     def list(self, request):
+        checked_result = check_token(request.META.get('HTTP_AUTH_TOKEN', None))
+        if not checked_result["status"]:
+            return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+
         paper_id = request.GET.get('paper_id', None)
         queryset = self.filter_queryset(self.get_queryset(paper_id))
 
@@ -24,6 +29,9 @@ class AnnotationAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         return Response({"annotations":serializer.data})
 
     def create(self, request):
+        checked_result = check_token(request.META.get('HTTP_AUTH_TOKEN', None))
+        if not checked_result["status"]:
+            return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):

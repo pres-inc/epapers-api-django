@@ -7,6 +7,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from pdf2image import convert_from_path
 
+from .AuthTokenCheck import check_token
 from ..models import Paper, PaperImage
 from ..serializers.PaperSerializer import PaperSerializer
 from ..consts import bucket, bucket_location, AWS_S3_BUCKET_NAME
@@ -21,6 +22,10 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         return self.queryset.filter(team=team_id).order_by("created_at").reverse()
 
     def list(self, request):
+        checked_result = check_token(request.META.get('HTTP_AUTH_TOKEN', None))
+        if not checked_result["status"]:
+            return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+
         team_id = request.GET.get('team_id', None)
         queryset = self.filter_queryset(self.get_queryset(team_id))
 
@@ -28,6 +33,10 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         return Response({"papers":serializer.data})
 
     def create(self, request):
+        checked_result = check_token(request.META.get('HTTP_AUTH_TOKEN', None))
+        if not checked_result["status"]:
+            return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+            
         user_id = request.data.get("user_id", "tmp")
         team_id = request.data.get("team_id", 0)
         title = request.data.get("title", "no_title")
