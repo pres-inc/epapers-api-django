@@ -30,9 +30,6 @@ class UserAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         return Response({"users":serializer.data})
 
     def create(self, request):
-        checked_result = check_token(request.META.get('HTTP_AUTH_TOKEN', None))
-        if not checked_result["status"]:
-            return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
         # 確認用パスワードが間違ってたらだめ
         password = request.data.get("password")
         password_conf = request.data.get("password_conf")
