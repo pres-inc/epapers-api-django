@@ -11,7 +11,6 @@ def check_token(token):
         }
 
     token_obj = Token.objects.filter(token=token)
-    print(token)
     if token_obj.count() == 0:
         return {
             "status": False,
