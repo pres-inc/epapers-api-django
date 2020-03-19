@@ -18,4 +18,5 @@ s3_client = boto3.client(
 bucket = s3_resource.Bucket(AWS_S3_BUCKET_NAME)
 bucket_location = s3_client.get_bucket_location(Bucket=AWS_S3_BUCKET_NAME)
 
-LOGIN_TIME = 60 * 60 * 24
+# トークンの有効期限は14日間
+LOGIN_TIME = 60 * 60 * 24 * 14
