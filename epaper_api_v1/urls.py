@@ -7,6 +7,7 @@ from .views.LoginAPI import LoginAPI
 from .views.PaperAPI import PaperAPI
 from .views.AnnotationAPI import AnnotationAPI
 from .views.AnnotationCommentAPI import AnnotationCommentAPI
+from .views.PaperInfoAPI import PaperInfoAPI
 
 router = routers.DefaultRouter()
 urlpatterns = {
@@ -15,6 +16,7 @@ urlpatterns = {
     path('team/paper/', PaperAPI.as_view()),
     path('team/paper/annotation/', AnnotationAPI.as_view()),
     path('team/paper/annotation/comment/', AnnotationCommentAPI.as_view()),
+    path('team/paper/info/', PaperInfoAPI.as_view()),
 }
 urlpatterns = urlp.format_suffix_patterns(urlpatterns)
 urlpatterns += router.urls
