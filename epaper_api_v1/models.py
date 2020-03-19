@@ -3,6 +3,8 @@ from django.db import models
 
 class Team(models.Model):
     name = models.CharField(max_length=100, default="New Team")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 class User(models.Model):
     id = models.CharField(primary_key=True, max_length=100)
@@ -13,6 +15,7 @@ class User(models.Model):
     team = models.ForeignKey('Team', on_delete=models.CASCADE, related_name="user_team_id")
     is_owner = models.BooleanField(null=False, default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 class Paper(models.Model):
     title = models.CharField(max_length=100, default="New Paper")

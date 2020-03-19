@@ -21,7 +21,7 @@ class LoginAPI(generics.RetrieveAPIView):
             return Response({"status":False, "details":"Please enter the correct email address and password."}, status=status.HTTP_400_BAD_REQUEST)
         serializer = self.get_serializer(user[0])
         login_limit = datetime.datetime.now().timestamp() + login_time
-        serializer.data.update(login_limit=login_limit)
+        
         result_data = {
             "login_limit": int(login_limit),
             "id": serializer.data["id"],
