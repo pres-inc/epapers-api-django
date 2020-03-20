@@ -18,7 +18,7 @@ class UserAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         return None
 
     def list(self, request):
-        checked_result = check_token(request.META.get('HTTP_AUTH_TOKEN', None))
+        checked_result = check_token(request.GET.get('Auth', None))
         if not checked_result["status"]:
             return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -67,7 +67,7 @@ class UserAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             return Response({"status":False}, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request):
-        checked_result = check_token(request.META.get('HTTP_AUTH_TOKEN', None))
+        checked_result = check_token(request.data.get('Auth', None))
         if not checked_result["status"]:
             return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
         # 確認用パスワードが間違ってたらだめ

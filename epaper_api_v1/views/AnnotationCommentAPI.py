@@ -20,7 +20,7 @@ class AnnotationCommentAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         return self.queryset.filter(annotation=annotation_id).order_by("created_at")
 
     def list(self, request):
-        checked_result = check_token(request.META.get('HTTP_AUTH_TOKEN', None))
+        checked_result = check_token(request.GET.get('Auth', None))
         if not checked_result["status"]:
             return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -31,7 +31,7 @@ class AnnotationCommentAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         return Response({"comments":serializer.data})
 
     def create(self, request):
-        checked_result = check_token(request.META.get('HTTP_AUTH_TOKEN', None))
+        checked_result = check_token(request.data.get('Auth', None))
         if not checked_result["status"]:
             return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
             

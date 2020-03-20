@@ -15,7 +15,7 @@ class PaperInfoAPI(generics.ListAPIView):
         return self.queryset.get(pk=paper_id)
 
     def list(self, request):
-        checked_result = check_token(request.META.get('HTTP_AUTH_TOKEN', None))
+        checked_result = check_token(request.GET.get('Auth', None))
         if not checked_result["status"]:
             return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
             
