@@ -33,7 +33,7 @@ class LoginAPI(generics.RetrieveAPIView):
             user_token.token = hash
             user_token.save()
 
-        team_name = Team.objects.get(serializer.data["team_id"]).name
+        team_name = Team.objects.get(pk=serializer.data["team_id"]).name
         result_data = {
             "login_limit": int(login_limit),
             "token": hash,
