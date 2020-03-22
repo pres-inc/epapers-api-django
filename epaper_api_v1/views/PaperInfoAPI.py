@@ -21,6 +21,7 @@ class PaperInfoAPI(generics.ListAPIView):
             
         paper_id = request.GET.get('paper_id', None)
 
+        print(paper_id)
         queryset = self.filter_queryset(self.get_queryset(paper_id))
 
         serializer = self.get_serializer(queryset)
