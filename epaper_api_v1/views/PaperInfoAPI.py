@@ -19,10 +19,7 @@ class PaperInfoAPI(generics.ListAPIView):
         if not checked_result["status"]:
             return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
             
-        print(check_token["user"].team_id)
-
         paper_id = request.GET.get('paper_id', None)
-        
 
         queryset = self.filter_queryset(self.get_queryset(paper_id))
 
