@@ -20,7 +20,7 @@ class AnnotationSerializerForPaperInfo(serializers.ModelSerializer):
     user = UserSerializerForPaper(read_only=True)
     class Meta:
         model = Annotation
-        fields = ('pk', 'memo', 'comment_count', 'x0', 'y0', 'x1', 'y1', 'user')
+        fields = ('pk', 'memo', 'comment_count', 'x0', 'y0', 'x1', 'y1', 'user', 'page')
 
     def get_comment_count(self, obj):
         return Comment.objects.filter(annotation=obj.pk).count()
