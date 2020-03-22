@@ -1,6 +1,6 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
-from ..models import User, Token
+from ..models import User, Token, Team
 from ..serializers.UserSerializer import UserSerializer
 from ..consts import LOGIN_TIME
 
@@ -33,7 +33,7 @@ class LoginAPI(generics.RetrieveAPIView):
             user_token.token = hash
             user_token.save()
 
-        
+        team_name = Team.objects.get(serializer.data["team_id"]).name
         result_data = {
             "login_limit": int(login_limit),
             "token": hash,
@@ -42,6 +42,7 @@ class LoginAPI(generics.RetrieveAPIView):
             "mail": serializer.data["mail"],
             "color": serializer.data["color"],
             "team_id": serializer.data["team_id"],
+            "team_name": team_name,
             "is_owner": serializer.data["is_owner"]
         }
         return Response(result_data)

@@ -25,5 +25,6 @@ def check_token(token):
     
     return {
         "status": True,
+        "user": token_obj[0].user,
         "details": ""
     }
