@@ -25,7 +25,7 @@ class PaperInfoAPI(generics.ListAPIView):
 
         serializer = self.get_serializer(queryset)
 
-        if check_token["user"].team_id != serializer.data["team_id"]:
+        if checked_result["user"].team_id != serializer.data["team_id"]:
             return Response({"status":False, "details":"You do not have permission to view."}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(serializer.data)
