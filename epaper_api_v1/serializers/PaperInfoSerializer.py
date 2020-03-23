@@ -26,16 +26,16 @@ class AnnotationSerializerForPaperInfo(serializers.ModelSerializer):
         return Comment.objects.filter(annotation=obj.pk).count()
     
     def get_x0(self, obj):
-        return int(obj.coordinate.split(",")[0])
+        return float(obj.coordinate.split(",")[0])
     
     def get_y0(self, obj):
-        return int(obj.coordinate.split(",")[1])
+        return float(obj.coordinate.split(",")[1])
     
     def get_x1(self, obj):
-        return int(obj.coordinate.split(",")[2])
+        return float(obj.coordinate.split(",")[2])
     
     def get_y1(self, obj):
-        return int(obj.coordinate.split(",")[3])
+        return float(obj.coordinate.split(",")[3])
     
 
 
