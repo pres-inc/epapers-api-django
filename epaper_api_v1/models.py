@@ -28,6 +28,7 @@ class Paper(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="paper_user_id")
     created_at = models.DateTimeField(auto_now_add=True)
     thumbnail_url = models.CharField(max_length=300, default="") # 一旦使わない
+    is_open = models.BooleanField(null=False, default=True)
     #auters = models.CharField(max_length=300, default="") # 一旦使わない
 
 class PaperImage(models.Model):
@@ -42,10 +43,12 @@ class Annotation(models.Model):
     coordinate = models.CharField(max_length=100, default="")
     page = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_open = models.BooleanField(null=False, default=True)
 
 class Comment(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="comment_user_id")
     comment = models.CharField(max_length=500, default="", blank=True)
     image_url = models.CharField(max_length=500, default="", blank=True)
     annotation = models.ForeignKey('Annotation', on_delete=models.CASCADE, related_name="annotation_id")
-    created_at = models.DateTimeField(auto_now_add=True)    
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_open = models.BooleanField(null=False, default=True)
