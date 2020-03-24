@@ -43,6 +43,8 @@ class AnnotationCommentAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         image_url = ""
         if image_base64 is not None and image_base64 != "":
             image_url = create_comment_image_url(image_base64, "jpg")
+        print(request.data)
+        print(image_url)
         request.data.update(image_url=image_url)
 
         serializer = self.get_serializer(data=request.data)
