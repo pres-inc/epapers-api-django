@@ -75,7 +75,7 @@ class PaperInfoSerializer(serializers.ModelSerializer):
         return serializer.data
     
     def get_annotations(self, obj):
-        serializer = AnnotationSerializerForPaperInfo(Annotation.objects.filter(paper=obj.pk), many=True)
+        serializer = AnnotationSerializerForPaperInfo(Annotation.objects.filter(paper=obj.pk, is_open=True), many=True)
         return serializer.data
 
     def get_annotationed_users(self, obj):
