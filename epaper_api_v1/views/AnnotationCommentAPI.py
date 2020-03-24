@@ -46,8 +46,8 @@ class AnnotationCommentAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         # request.data.update(image_url=image_url)
         request_data = {
             "user_id": request.data.get("user_id"),
-            "annotation_id": request.data("annotation_id"),
-            "comment": request.data.data("comment", ""),
+            "annotation_id": request.data.get("annotation_id"),
+            "comment": request.data.data.get("comment", ""),
             "image_url": image_url
         }
 
