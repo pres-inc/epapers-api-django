@@ -8,7 +8,7 @@ class AnnotationSerializer(serializers.ModelSerializer):
     pk = serializers.SerializerMethodField()
     class Meta:
         model = Annotation
-        fields = ('pk', 'paper_id', 'memo', 'coordinate', 'page', 'user_id', 'created_at')
+        fields = ('pk', 'paper_id', 'memo', 'coordinate', 'page', 'user_id', 'created_at', 'is_open')
         read_only_fields = ('created_at', 'pk', )
 
     def create(self, validated_date):
