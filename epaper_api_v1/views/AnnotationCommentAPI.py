@@ -41,7 +41,6 @@ class AnnotationCommentAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             return Response({"status":False, "details": "comment or image_url is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         image_url = ""
-        print(image_base64)
         if image_base64 is not None and image_base64 != "":
             image_url = create_comment_image_url(image_base64, "jpg")
         request_data = {
