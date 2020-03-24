@@ -41,10 +41,9 @@ class AnnotationCommentAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             return Response({"status":False, "details": "comment or image_url is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         image_url = ""
+        print(image_base64)
         if image_base64 is not None and image_base64 != "":
-            print(image_base64)
             image_url = create_comment_image_url(image_base64, "jpg")
-        # request.data.update(image_url=image_url)
         request_data = {
             "user_id": request.data.get("user_id"),
             "annotation_id": request.data.get("annotation_id"),
