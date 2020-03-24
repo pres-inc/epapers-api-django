@@ -43,11 +43,15 @@ class AnnotationCommentAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         image_url = ""
         if image_base64 is not None and image_base64 != "":
             image_url = create_comment_image_url(image_base64, "jpg")
-        print(request.data)
-        print(image_url)
-        request.data.update(image_url=image_url)
+        # request.data.update(image_url=image_url)
+        request_data = {
+            "user_id": request.data.get("user_id"),
+            "annotation_id": request.data("annotation_id"),
+            "comment": request.data.data("comment", ""),
+            "image_url": image_url
+        }
 
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=request_data)
         if serializer.is_valid(raise_exception=True):
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
