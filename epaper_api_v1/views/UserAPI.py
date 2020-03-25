@@ -35,13 +35,13 @@ class UserAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         password_conf = request.data.get("password_conf")
         if password != password_conf:
             return Response({"status":False, "details":"password != password_conf"}, status=status.HTTP_400_BAD_REQUEST)
-        
+        print("pass ok")
 
         # メールアドレスがすでに使用されていたらだめ
         mail = request.data.get("mail", None)
         if mail is not None and self.queryset.filter(mail=mail).count() > 0:
             return Response({"status":False, "details":"mail address already used"}, status=status.HTTP_400_BAD_REQUEST)
-        
+        print("mail ok")
         # オーナーでチーム名を設定している場合, チーム名変更
         is_owner = request.data.get("is_owner", False)
         team_id = request.data.get("team_id")
@@ -49,6 +49,7 @@ class UserAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         request_data = request.data.copy()
         new_id = str(uuid.uuid4())
         request_data.update(id=new_id)
+        print(request_data)
 
         serializer = self.get_serializer(data=request_data)
         if is_owner:
