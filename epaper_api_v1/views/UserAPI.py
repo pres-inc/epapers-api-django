@@ -59,7 +59,7 @@ class UserAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
                 team_obj = Team.objects.get(id=team_id)
                 team_obj.name = team_name
                 team_obj.save()
-        
+        print(request_data)
         
         if serializer.is_valid(raise_exception=True):
             self.perform_create(serializer)
