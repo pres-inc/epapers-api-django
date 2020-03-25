@@ -52,6 +52,9 @@ class UserAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         serializer = self.get_serializer(data=request_data)
         if is_owner:
             print("a")
+            users = self.queryset.filter(team_id=team_id, is_owner=True)
+            for user in users:
+                print(user)
             if self.queryset.filter(team_id=team_id, is_owner=True).count != 0:
                 print("b")
                 return Response({"status":False, "details":"Owner already exists."}, status=status.HTTP_400_BAD_REQUEST)
