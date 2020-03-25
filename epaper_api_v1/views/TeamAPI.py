@@ -11,10 +11,11 @@ class TeamAPI(generics.ListCreateAPIView):
 
 
     def list(self, request):
-        queryset = self.filter_queryset(self.get_queryset())
+        team_id = request.GET.get("team_id")
+        queryset = self.queryset.get(id=team_id)
 
-        serializer = self.get_serializer(queryset, many=True)
-        return Response({"teams":serializer.data})
+        serializer = self.get_serializer(queryset)
+        return Response({"team":serializer.data})
 
     def create(self, request):
 
