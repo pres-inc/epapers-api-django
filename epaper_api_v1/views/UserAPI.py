@@ -45,9 +45,12 @@ class UserAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         # オーナーでチーム名を設定している場合, チーム名変更
         is_owner = request.data.get("is_owner", False)
         team_id = request.data.get("team_id")
+        
+        request_data = request.data.copy()
         new_id = str(uuid.uuid4())
-        request.data.update(id=new_id)
-        serializer = self.get_serializer(data=request.data)
+        request_data.update(id=new_id)
+
+        serializer = self.get_serializer(data=request_data)
         if is_owner:
             if self.queryset.filter(team_id=team_id, is_owner=True).count != 0:
                 return Response({"status":False, "details":"Owner already exists."}, status=status.HTTP_400_BAD_REQUEST)
