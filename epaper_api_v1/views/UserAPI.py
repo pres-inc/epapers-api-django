@@ -55,6 +55,7 @@ class UserAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             users = self.queryset.filter(team_id=team_id, is_owner=True)
             for user in users:
                 print(user)
+            print(self.queryset.filter(team_id=team_id, is_owner=True).count)
             if self.queryset.filter(team_id=team_id, is_owner=True).count != 0:
                 print("b")
                 return Response({"status":False, "details":"Owner already exists."}, status=status.HTTP_400_BAD_REQUEST)
