@@ -18,9 +18,9 @@ class TeamAPI(generics.ListCreateAPIView):
 
     def create(self, request):
 
-        name = request.data.get("name", None)
-        if name is None or name == "":
-            return Response({"status":False, "details":"name is required."}, status=status.HTTP_400_BAD_REQUEST)
+        if request.data.get("id", None) is None:
+            new_id = str(uuid.uuid4())
+            request.data.update(id=new_id)
 
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):

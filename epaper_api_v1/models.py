@@ -2,6 +2,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 class Team(models.Model):
+    id = models.CharField(primary_key=True, max_length=100)
     name = models.CharField(max_length=100, default="New Team")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

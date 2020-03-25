@@ -90,7 +90,7 @@ class UserAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             team_name = request.data.get("team_name", None)
             if team_name is not None:
                 # team 名前変更
-                team_obj = Team.objects.get(pk=team_id)
+                team_obj = Team.objects.get(id=team_id)
                 team_obj.name = team_name
                 team_obj.save()
         request.data.update(mail=request.data.get("mail", instance.mail))

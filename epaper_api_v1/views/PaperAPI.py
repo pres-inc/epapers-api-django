@@ -38,7 +38,7 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
             
         user_id = request.data.get("user_id", "tmp")
-        team_id = request.data.get("team_id", 0)
+        team_id = request.data.get("team_id", "0")
         title = request.data.get("title", "no_title")
         file = request.data["file"]
 
