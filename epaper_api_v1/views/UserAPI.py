@@ -35,12 +35,12 @@ class UserAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         password_conf = request.data.get("password_conf")
         if password != password_conf:
             return Response({"status":False, "details":"password != password_conf"}, status=status.HTTP_400_BAD_REQUEST)
-        print("ok")
+
         # メールアドレスがすでに使用されていたらだめ
         mail = request.data.get("mail", None)
         if mail is not None and self.queryset.filter(mail=mail).count() > 0:
             return Response({"status":False, "details":"mail address already used"}, status=status.HTTP_400_BAD_REQUEST)
-        print("ok")
+
         # オーナーでチーム名を設定している場合, チーム名変更
         is_owner = request.data.get("is_owner", False)
         team_id = request.data.get("team_id")
@@ -48,25 +48,16 @@ class UserAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         request_data = request.data.copy()
         new_id = str(uuid.uuid4())
         request_data.update(id=new_id)
-        print("ok")
         serializer = self.get_serializer(data=request_data)
         if is_owner:
-            print("a")
-            users = self.queryset.filter(team_id=team_id, is_owner=True)
-            for user in users:
-                print(user)
-            print(self.queryset.filter(team_id=team_id, is_owner=True).count)
-            if self.queryset.filter(team_id=team_id, is_owner=True).count != 0:
-                print("b")
+            if self.queryset.filter(team_id=team_id, is_owner=True).count() != 0:
                 return Response({"status":False, "details":"Owner already exists."}, status=status.HTTP_400_BAD_REQUEST)
             team_name = request.data.get("team_name", None)
-            print("c")
             if team_name is not None:
                 # team 名前変更
                 team_obj = Team.objects.get(id=team_id)
                 team_obj.name = team_name
                 team_obj.save()
-        print(request_data)
         
         if serializer.is_valid(raise_exception=True):
             self.perform_create(serializer)
