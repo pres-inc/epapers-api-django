@@ -51,9 +51,12 @@ class UserAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         print("ok")
         serializer = self.get_serializer(data=request_data)
         if is_owner:
+            print("a")
             if self.queryset.filter(team_id=team_id, is_owner=True).count != 0:
+                print("b")
                 return Response({"status":False, "details":"Owner already exists."}, status=status.HTTP_400_BAD_REQUEST)
             team_name = request.data.get("team_name", None)
+            print("c")
             if team_name is not None:
                 # team 名前変更
                 team_obj = Team.objects.get(id=team_id)
