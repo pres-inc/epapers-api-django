@@ -15,9 +15,7 @@ class AnnotationCommentAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
     serializer_class = AnnotationCommentSerializer
 
     def get_queryset(self, annotation_id):
-        # y0 の小さい順の方がいいけどなー
-        # get team/paper/info で取得するから一旦パス
-        return self.queryset.filter(annotation=annotation_id).order_by("created_at")
+        return self.queryset.filter(annotation=annotation_id, is_open=True).order_by("created_at")
 
     def list(self, request):
         checked_result = check_token(request.GET.get('Auth', None))

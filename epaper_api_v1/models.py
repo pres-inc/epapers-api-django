@@ -28,7 +28,7 @@ class Paper(models.Model):
     team = models.ForeignKey('Team', on_delete=models.CASCADE, related_name="paper_team_id")
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="paper_user_id")
     created_at = models.DateTimeField(auto_now_add=True)
-    thumbnail_url = models.CharField(max_length=300, default="") # 一旦使わない
+    thumbnail_url = models.CharField(max_length=300, default="", blank=True) # 一旦使わない
     is_open = models.BooleanField(default=True)
     #auters = models.CharField(max_length=300, default="") # 一旦使わない
 

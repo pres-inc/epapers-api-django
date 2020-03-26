@@ -19,7 +19,7 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
     serializer_class = PaperSerializer
 
     def get_queryset(self, team_id):
-        return self.queryset.filter(team=team_id).order_by("created_at").reverse()
+        return self.queryset.filter(team=team_id, is_open=True).order_by("created_at").reverse()
 
     def list(self, request):
         checked_result = check_token(request.GET.get('Auth', None))
