@@ -74,6 +74,10 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         
 
     def update(self, request):
+        checked_result = check_token(request.data.get('Auth', None))
+        if not checked_result["status"]:
+            return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+
         title = request.data.get("title")
         if title is None:
             return Response({"status":False, "details":"title is required."}, status=status.HTTP_400_BAD_REQUEST)
