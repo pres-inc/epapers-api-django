@@ -14,7 +14,7 @@ class AnnotationCommentSerializer(serializers.ModelSerializer):
     user = UserSerializerForComment(read_only=True)
     class Meta:
         model = Comment
-        fields = ('pk', 'annotation_id', 'comment', 'image_url', 'user_id', 'created_at', 'user')
+        fields = ('pk', 'annotation_id', 'comment', 'image_url', 'user_id', 'created_at', 'user', 'is_open')
         read_only_fields = ('created_at', 'pk', )
 
     def create(self, validated_date):
