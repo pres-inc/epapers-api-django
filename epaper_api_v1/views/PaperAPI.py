@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from pdf2image import convert_from_path
 
 from .AuthTokenCheck import check_token
-from ..models import Paper, PaperImage, Tag
+from ..models import Paper, PaperImage, Tag, TagPaper
 from ..serializers.PaperSerializer import PaperSerializer
 from ..serializers.TagSerializer import TagSerializer
 from ..serializers.TagPaperSerializer import TagPaperSerializer
@@ -29,10 +29,20 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
 
         team_id = request.GET.get('team_id', None)
-        queryset = self.filter_queryset(self.get_queryset(team_id))
+        tags = request.GET.get('tags', None)
+        if tags is None or tags == "":
+            queryset = self.filter_queryset(self.get_queryset(team_id))
 
-        serializer = self.get_serializer(queryset, many=True)
-        return Response({"papers":serializer.data})
+            serializer = self.get_serializer(queryset, many=True)
+            return Response({"papers":serializer.data})
+        else:
+            tag_list = list(filter(lambda x: x != "", tags.split(",")))
+            tag_id_list = Tag.objects.filter(tag__in=tag_list).values_list('pk', flat=True)
+            paper_id_list = TagPaper.objects.filter(tag_id__in=tag_id_list).values_list('paper_id', flat=True)
+            queryset = self.queryset.filter(team=team_id, is_open=True, pk__in=paper_id_list)
+            
+            serializer = self.get_serializer(queryset, many=True)
+            return Response({"papers":serializer.data})
 
     def create(self, request):
         checked_result = check_token(request.data.get('Auth', None))
