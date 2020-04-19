@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..models import Paper, Team, User
+from ..models import Paper, Team, User, TagPaper, Tag
 
 class UserSerializerForPaper(serializers.ModelSerializer):
     class Meta:
@@ -12,9 +12,10 @@ class PaperSerializer(serializers.ModelSerializer):
     user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     pk = serializers.SerializerMethodField()
     user = UserSerializerForPaper(read_only=True)
+    tags = serializers.SerializerMethodField()
     class Meta:
         model = Paper
-        fields = ('pk', 'title', 'team_id', 'user_id', 'created_at', 'user', 'is_open')
+        fields = ('pk', 'title', 'team_id', 'user_id', 'created_at', 'user', 'is_open', 'tags')
         read_only_fields = ('created_at', 'pk', )
 
     def create(self, validated_date):
@@ -32,3 +33,8 @@ class PaperSerializer(serializers.ModelSerializer):
     
     def get_pk(self, obj):
         return int(obj.pk)
+    
+    def get_tags(self, obj):
+        tag_id_list = TagPaper.objects.filter(paper_id=obj.pk).values_list('tag', flat=True)
+        tags = Tag.objects.filter(pk__in=tag_id_list).values_list('tag', flat=True)
+        return tags

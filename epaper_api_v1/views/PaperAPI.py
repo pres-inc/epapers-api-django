@@ -8,8 +8,10 @@ from rest_framework.response import Response
 from pdf2image import convert_from_path
 
 from .AuthTokenCheck import check_token
-from ..models import Paper, PaperImage
+from ..models import Paper, PaperImage, Tag
 from ..serializers.PaperSerializer import PaperSerializer
+from ..serializers.TagSerializer import TagSerializer
+from ..serializers.TagPaperSerializer import TagPaperSerializer
 from ..consts import bucket, bucket_location, AWS_S3_BUCKET_NAME
 
 
@@ -37,6 +39,10 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         if not checked_result["status"]:
             return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
             
+        tags = request.data.get("tags", "")
+        tag_list = list(filter(lambda x: x != "", tags.split(",")))
+        create_tags(tag_list)
+
         user_id = request.data.get("user_id", "tmp")
         team_id = request.data.get("team_id", "0")
         title = request.data.get("title", "no_title")
@@ -67,6 +73,8 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             paper_id = serializer.data["pk"]
             create_paperImage_and_upload_thread = threading.Thread(target=create_paperImage_and_upload, args=(save_dir_path, pdf_file_path, team_id, paper_id, title))
             create_paperImage_and_upload_thread.start()
+
+            link_tags(tag_list, paper_id)
 
             return Response({"status":True}, status=status.HTTP_201_CREATED, headers=headers)
         else:
@@ -114,3 +122,26 @@ def create_paperImage_and_upload(save_dir_path, pdf_file_path, team_id, paper_id
         PaperImage.objects.create(page=i, url=url, paper_id=paper_id)
     # save_dir_path以下のファイルやフォルダを全て削除
     shutil.rmtree(save_dir_path)
+
+def create_tags(tag_list):
+    for tag in tag_list:
+        if Tag.objects.filter(tag=tag).count() == 0:
+            data = {
+                "tag":tag
+            }
+            serializer = TagSerializer(data=data)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+
+def link_tags(tag_list, paper_id):
+    for tag in tag_list:
+        tag_instance = Tag.objects.filter(tag=tag).first()
+        tag_id = tag_instance.pk
+        data = {
+            "tag_id": tag_id,
+            "paper_id": paper_id
+        }
+        print(data)
+        serializer = TagPaperSerializer(data=data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()

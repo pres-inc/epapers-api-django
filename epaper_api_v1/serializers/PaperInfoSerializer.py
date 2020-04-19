@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..models import Paper, Team, User, PaperImage, Annotation, Comment
+from ..models import Paper, Team, User, PaperImage, Annotation, Comment, Tag, TagPaper
 
 class UserSerializerForPaper(serializers.ModelSerializer):
     class Meta:
@@ -49,9 +49,10 @@ class PaperInfoSerializer(serializers.ModelSerializer):
     annotations = serializers.SerializerMethodField()
     annotationed_users = serializers.SerializerMethodField()
     user = UserSerializerForPaper(read_only=True)
+    tags = serializers.SerializerMethodField()
     class Meta:
         model = Paper
-        fields = ('pk', 'title', 'team_id', 'user_id', 'created_at', 'user', 'pages', 'annotations', 'annotationed_users')
+        fields = ('pk', 'title', 'team_id', 'user_id', 'created_at', 'user', 'pages', 'annotations', 'annotationed_users', 'tags')
         read_only_fields = ('created_at', 'pk', )
 
     def create(self, validated_date):
@@ -85,3 +86,8 @@ class PaperInfoSerializer(serializers.ModelSerializer):
             annotaton_count = Annotation.objects.filter(user_id=data["id"], paper_id=obj.pk, is_open=True).count()
             serializer.data[i].update(annotation_count=annotaton_count)
         return serializer.data
+        
+    def get_tags(self, obj):
+        tag_id_list = TagPaper.objects.filter(paper_id=obj.pk).values_list('tag', flat=True)
+        tags = Tag.objects.filter(pk__in=tag_id_list).values_list('tag', flat=True)
+        return tags
