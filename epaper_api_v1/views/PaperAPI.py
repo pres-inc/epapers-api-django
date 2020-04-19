@@ -105,18 +105,23 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         title = request.data.get("title")
         if title is None:
             return Response({"status":False, "details":"title is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
         paper_id = request.data.get("paper_id")
         if paper_id is None:
             return Response({"status":False, "details":"paper_id is required."}, status=status.HTTP_400_BAD_REQUEST)
         
+        tags = request.data.get("tags")
+        if tags is not None and tags != "":
+            tag_list = list(filter(lambda x: x != "", tags.split(",")))
+            create_tags(tag_list)
+            update_TagPaper(tag_list, paper_id)
+
         instance = self.queryset.get(pk=paper_id)
         request_data = {
             "title":title,
-            "user_id": instance.user.id,
-            "team_id": instance.team_id
         }
         if instance.user.id == request.data.get("user_id"):
-            serializer = self.get_serializer(instance, data=request_data)
+            serializer = self.get_serializer(instance, data=request_data, partial=True)
             if serializer.is_valid(raise_exception=True):
                 self.perform_update(serializer)
                 return Response({"status":True}, status=status.HTTP_202_ACCEPTED)
@@ -157,7 +162,19 @@ def link_tags(tag_list, paper_id):
             "tag_id": tag_id,
             "paper_id": paper_id
         }
-        print(data)
         serializer = TagPaperSerializer(data=data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
+
+def update_TagPaper(tag_list, paper_id):
+    tag_paper_list = TagPaper.objects.filter(paper_id=paper_id)
+    tag_id_list = Tag.objects.filter(tag__in=tag_list).values_list('pk', flat=True)
+    # 新たな設定タグに含まれていない既存タグは消す
+    # すでに設定されているタグがあれば tag_list から消す
+    for tag_paper in tag_paper_list:
+        if tag_paper.tag.pk not in tag_id_list:
+            tag_paper.delete()
+        else:
+            tag_list.remove(tag_paper.tag.tag)
+
+    link_tags(tag_list, paper_id)
