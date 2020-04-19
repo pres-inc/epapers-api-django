@@ -64,16 +64,21 @@ class AnnotationCommentAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         user_id = request.data.get("user_id")
         comment_id = request.data.get("comment_id")
         new_comment = request.data.get("comment")
-        if new_comment is None or new_comment == "":
-            return Response({"status":False, "details":"comment required"}, status=status.HTTP_400_BAD_REQUEST)
+        new_image_base64 = request.data.get("image_base64")
+        if (new_comment is None or new_comment == "") and (new_image_base64 is None or new_image_base64 == ""):
+            return Response({"status":False, "details":"comment or image_base64 required"}, status=status.HTTP_400_BAD_REQUEST)
             
         instance = self.queryset.get(pk=comment_id)
-        if instance.image_url != "":
-            return Response({"status":False, "details":"comment_id is image comment"}, status=status.HTTP_400_BAD_REQUEST)
-
-        request_data = {
-            "comment": new_comment
-        }
+        request_data = {}
+        if new_comment != "":
+            if instance.comment == "":
+                return Response({"status":False, "details":"this comment is image"}, status=status.HTTP_400_BAD_REQUEST)
+            request_data["comment"] = new_comment
+        elif new_image_base64 != "":
+            if instance.image_url == "":
+                return Response({"status":False, "details":"this comment is text"}, status=status.HTTP_400_BAD_REQUEST)
+            url = create_comment_image_url(new_image_base64, "jpg")
+            request_data["image_url"] = url
 
         if instance.user.id == user_id:
             serializer = self.get_serializer(instance, data=request_data, partial=True)
