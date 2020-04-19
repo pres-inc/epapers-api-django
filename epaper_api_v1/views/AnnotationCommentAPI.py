@@ -57,7 +57,31 @@ class AnnotationCommentAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             return Response({"status":False}, status=status.HTTP_400_BAD_REQUEST)
         
     def update(self, request):
-        return Response({"status":True, "details": "まだ作ってない"}, status=status.HTTP_202_ACCEPTED)
+        checked_result = check_token(request.data.get('Auth', None))
+        if not checked_result["status"]:
+            return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_id = request.data.get("user_id")
+        comment_id = request.data.get("comment_id")
+        new_comment = request.data.get("comment")
+        if new_comment is None or new_comment == "":
+            return Response({"status":False, "details":"comment required"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        instance = self.queryset.get(pk=comment_id)
+        if instance.image_url != "":
+            return Response({"status":False, "details":"comment_id is image comment"}, status=status.HTTP_400_BAD_REQUEST)
+
+        request_data = {
+            "comment": new_comment
+        }
+
+        if instance.user.id == user_id:
+            serializer = self.get_serializer(instance, data=request_data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            return Response({"status":True}, status=status.HTTP_202_ACCEPTED)
+        else:
+            return Response({"status":False, "details":"user_id faild"}, status=status.HTTP_400_BAD_REQUEST)
         
 def create_comment_image_url(image_base64, extension):
     s3key = 'comments/' + str(uuid.uuid4()) + '.' + extension
