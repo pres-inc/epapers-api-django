@@ -38,8 +38,14 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         else:
             tag_list = list(filter(lambda x: x != "", tags.split(",")))
             tag_id_list = Tag.objects.filter(tag__in=tag_list).values_list('pk', flat=True)
-            paper_id_list = TagPaper.objects.filter(tag_id__in=tag_id_list).values_list('paper_id', flat=True)
-            queryset = self.queryset.filter(team=team_id, is_open=True, pk__in=paper_id_list)
+            paper_id_list = list(TagPaper.objects.filter(tag_id__in=tag_id_list).values_list('paper_id', flat=True))
+            kind_id = list(set(paper_id_list))
+            match_paper_id_list = []
+            for ID in kind_id:
+                if paper_id_list.count(ID) == len(tag_list):
+                    match_paper_id_list.append(ID)
+
+            queryset = self.queryset.filter(team=team_id, is_open=True, pk__in=match_paper_id_list)
             
             serializer = self.get_serializer(queryset, many=True)
             return Response({"papers":serializer.data})
