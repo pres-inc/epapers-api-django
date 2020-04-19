@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from .AuthTokenCheck import check_token
 from ..models import Annotation
 from ..serializers.AnnotationSerializer import AnnotationSerializer
+from ..serializers.PaperInfoSerializer import AnnotationSerializerForPaperInfo
 
 
 class AnnotationAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
@@ -15,7 +16,7 @@ class AnnotationAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
     def get_queryset(self, paper_id):
         # y0 の小さい順の方がいいけどなー
         # get team/paper/info で取得するから一旦パス
-        return self.queryset.filter(paper=paper_id).order_by("created_at").reverse()
+        return self.queryset.filter(paper=paper_id, is_open=True).order_by("created_at").reverse()
 
     def list(self, request):
         checked_result = check_token(request.GET.get('Auth', None))
@@ -25,7 +26,7 @@ class AnnotationAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         paper_id = request.GET.get('paper_id', None)
         queryset = self.filter_queryset(self.get_queryset(paper_id))
 
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = AnnotationSerializerForPaperInfo(queryset, many=True)
         return Response({"annotations":serializer.data})
 
     def create(self, request):
