@@ -53,3 +53,11 @@ class Comment(models.Model):
     annotation = models.ForeignKey('Annotation', on_delete=models.CASCADE, related_name="annotation_id")
     created_at = models.DateTimeField(auto_now_add=True)
     is_open = models.BooleanField(default=True)
+
+class Tag(models.Model):
+    tag = models.CharField(max_length=200, default="", blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class TagPaper(models.Model):
+    tag = models.ForeignKey('Tag', on_delete=models.CASCADE, related_name="TagPaper_tag_id", null=True, blank=True, default=None)
+    paper = models.ForeignKey('Paper', on_delete=models.CASCADE, related_name="TagPaper_paper_id", null=True, blank=True, default=None)
