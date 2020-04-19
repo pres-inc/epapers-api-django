@@ -14,7 +14,7 @@ class PaperSerializer(serializers.ModelSerializer):
     user = UserSerializerForPaper(read_only=True)
     class Meta:
         model = Paper
-        fields = ('pk', 'title', 'team_id', 'user_id', 'created_at', 'user')
+        fields = ('pk', 'title', 'team_id', 'user_id', 'created_at', 'user', 'is_open')
         read_only_fields = ('created_at', 'pk', )
 
     def create(self, validated_date):
