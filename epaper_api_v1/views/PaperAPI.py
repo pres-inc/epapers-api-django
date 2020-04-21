@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from pdf2image import convert_from_path
 
 from .AuthTokenCheck import check_token
-from ..models import Paper, PaperImage, Tag, TagPaper, Comment, Annotation, User
+from ..models import Paper, PaperImage, Tag, TagPaper, Comment, Annotation, User, Watch
 from ..serializers.PaperSerializer import PaperSerializer
 from ..serializers.TagSerializer import TagSerializer
 from ..serializers.TagPaperSerializer import TagPaperSerializer
@@ -28,7 +28,9 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         checked_result = check_token(request.GET.get('Auth', None))
         if not checked_result["status"]:
             return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
-
+        user_id = request.GET.get("user_id")
+        if user_id is None or user_id == "":
+            return Response({"status":False, "details":"user_id required."}, status=status.HTTP_400_BAD_REQUEST)
         team_id = request.GET.get('team_id', None)
         tags = request.GET.get('tags', None)
         if tags is None or tags == "":
@@ -48,7 +50,11 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         all_anotation = Annotation.objects.filter(paper__team_id=team_id)
         all_comment = Comment.objects.filter(annotation_id__in=all_anotation)
         all_user = User.objects.filter(team_id=team_id)
+
+        user_watch_list = Watch.objects.filter(user_id=user_id).values_list("paper_id", flat=True)
         
+        my_papers = []
+        other_papers = []
         serializer = self.get_serializer(queryset, many=True)
         for i, paper in enumerate(serializer.data):
             paper_annotation = all_anotation.filter(paper_id=paper["pk"])
@@ -59,11 +65,19 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             user_serializer = UserSerializer(action_user, many=True)
             serializer.data[i]["action_users"] = user_serializer.data
             serializer.data[i]["tags"] = all_tag_paper.filter(paper_id=paper["pk"]).values_list('tag__tag', flat=True)
-            # あとで追加
-            serializer.data[i]["new_annotation_count"] = 0
-            serializer.data[i]["new_comment_count"] = 0
+            
+            if paper["pk"] in user_watch_list:
+                # 通知数計算をやる
+                serializer.data[i]["new_annotation_count"] = 1
+                serializer.data[i]["new_comment_count"] = 1
+                my_papers.append(serializer.data[i])
+            else:
+                serializer.data[i]["new_annotation_count"] = 0
+                serializer.data[i]["new_comment_count"] = 0
+                other_papers.append(serializer.data[i])
+            
 
-        return Response({"papers":serializer.data})
+        return Response({"papers":other_papers, "my_papers":my_papers})
 
     def create(self, request):
         checked_result = check_token(request.data.get('Auth', None))
@@ -118,8 +132,6 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
 
         title = request.data.get("title")
-        if title is None:
-            return Response({"status":False, "details":"title is required."}, status=status.HTTP_400_BAD_REQUEST)
         
         paper_id = request.data.get("paper_id")
         if paper_id is None:
@@ -133,10 +145,10 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             create_tags(tag_list, instance.team_id)
             update_TagPaper(tag_list, paper_id)
 
-        
-        request_data = {
-            "title":title,
-        }
+        request_data = {}
+        if title is not None and title != "":
+            request_data["title"] = title
+
         if instance.user.id == request.data.get("user_id"):
             serializer = self.get_serializer(instance, data=request_data, partial=True)
             if serializer.is_valid(raise_exception=True):
