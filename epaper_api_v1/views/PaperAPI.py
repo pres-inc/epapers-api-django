@@ -48,8 +48,8 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             queryset = self.queryset.filter(team=team_id, is_open=True, pk__in=match_paper_id_list)
         
         all_tag_paper = TagPaper.objects.filter(paper__team_id=team_id)
-        all_anotation = Annotation.objects.filter(paper__team_id=team_id)
-        all_comment = Comment.objects.filter(annotation_id__in=all_anotation)
+        all_anotation = Annotation.objects.filter(paper__team_id=team_id, is_open=True)
+        all_comment = Comment.objects.filter(annotation_id__in=all_anotation, is_open=True)
         all_user = User.objects.filter(team_id=team_id)
 
         user_watch_list = Watch.objects.filter(user_id=user_id).values_list("paper_id", flat=True)
@@ -67,6 +67,21 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             serializer.data[i]["action_users"] = user_serializer.data
             serializer.data[i]["tags"] = all_tag_paper.filter(paper_id=paper["pk"]).values_list('tag__tag', flat=True)
             
+            # 最新アクション時間を記録
+            latest_my_annotation = paper_annotation.filter(user_id=user_id).order_by("created_at").first()
+            latest_my_comment = paper_comment.filter(user_id=user_id).order_by("created_at").first()
+            
+            if latest_my_annotation is None and latest_my_comment is None:
+                latest_actioned_at = None
+            elif latest_my_annotation is not None and latest_my_comment is None:
+                latest_actioned_at = latest_my_annotation.created_at
+            elif latest_my_annotation is None and latest_my_comment is not None:
+                latest_actioned_at = latest_my_comment.created_at
+            elif latest_my_annotation is not None and latest_my_comment is not None:
+                latest_actioned_at = latest_my_comment.created_at if latest_my_comment.created_at > latest_my_annotation.created_at else latest_my_annotation.created_at
+            
+            serializer.data[i]["latest_actioned_at"] = latest_actioned_at
+
             if paper["pk"] in user_watch_list:
                 # 通知数計算をやる
                 serializer.data[i]["new_annotation_count"] = 1
@@ -77,7 +92,8 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
                 serializer.data[i]["new_comment_count"] = 0
                 other_papers.append(serializer.data[i])
             
-
+        my_papers = sorted(my_papers, key=lambda x:(x['latest_actioned_at'] is not None, x['latest_actioned_at']), reverse=True)
+        other_papers = sorted(other_papers, key=lambda x:(x['latest_actioned_at'] is not None, x['latest_actioned_at']), reverse=True)
         return Response({"papers":other_papers, "my_papers":my_papers})
 
     def create(self, request):
