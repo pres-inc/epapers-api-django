@@ -54,13 +54,13 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         checked_result = check_token(request.data.get('Auth', None))
         if not checked_result["status"]:
             return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
-            
+        
+        team_id = request.data.get("team_id", "0")
         tags = request.data.get("tags", "")
         tag_list = list(filter(lambda x: x != "", tags.split(",")))
-        create_tags(tag_list)
+        create_tags(tag_list, team_id)
 
         user_id = request.data.get("user_id", "tmp")
-        team_id = request.data.get("team_id", "0")
         title = request.data.get("title", "no_title")
         file = request.data["file"]
 
@@ -110,13 +110,15 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         if paper_id is None:
             return Response({"status":False, "details":"paper_id is required."}, status=status.HTTP_400_BAD_REQUEST)
         
+        instance = self.queryset.get(pk=paper_id)
+
         tags = request.data.get("tags")
         if tags is not None and tags != "":
             tag_list = list(filter(lambda x: x != "", tags.split(",")))
-            create_tags(tag_list)
+            create_tags(tag_list, instance.team_id)
             update_TagPaper(tag_list, paper_id)
 
-        instance = self.queryset.get(pk=paper_id)
+        
         request_data = {
             "title":title,
         }
@@ -144,11 +146,12 @@ def create_paperImage_and_upload(save_dir_path, pdf_file_path, team_id, paper_id
     # save_dir_path以下のファイルやフォルダを全て削除
     shutil.rmtree(save_dir_path)
 
-def create_tags(tag_list):
+def create_tags(tag_list, team_id):
     for tag in tag_list:
-        if Tag.objects.filter(tag=tag).count() == 0:
+        if Tag.objects.filter(tag=tag, team_id=team_id).count() == 0:
             data = {
-                "tag":tag
+                "tag":tag,
+                "team_id": team_id
             }
             serializer = TagSerializer(data=data)
             if serializer.is_valid(raise_exception=True):

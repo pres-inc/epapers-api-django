@@ -56,6 +56,7 @@ class Comment(models.Model):
 
 class Tag(models.Model):
     tag = models.CharField(max_length=200, default="", blank=True)
+    team = models.ForeignKey('Team', on_delete=models.CASCADE, related_name="tag_team_id")
     created_at = models.DateTimeField(auto_now_add=True)
 
 class TagPaper(models.Model):
