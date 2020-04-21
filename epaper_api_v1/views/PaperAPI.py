@@ -8,10 +8,11 @@ from rest_framework.response import Response
 from pdf2image import convert_from_path
 
 from .AuthTokenCheck import check_token
-from ..models import Paper, PaperImage, Tag, TagPaper
+from ..models import Paper, PaperImage, Tag, TagPaper, Comment, Annotation, User
 from ..serializers.PaperSerializer import PaperSerializer
 from ..serializers.TagSerializer import TagSerializer
 from ..serializers.TagPaperSerializer import TagPaperSerializer
+from ..serializers.UserSerializer import UserSerializer
 from ..consts import bucket, bucket_location, AWS_S3_BUCKET_NAME
 
 
@@ -32,9 +33,6 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         tags = request.GET.get('tags', None)
         if tags is None or tags == "":
             queryset = self.filter_queryset(self.get_queryset(team_id))
-
-            serializer = self.get_serializer(queryset, many=True)
-            return Response({"papers":serializer.data})
         else:
             tag_list = list(filter(lambda x: x != "", tags.split(",")))
             tag_id_list = Tag.objects.filter(tag__in=tag_list).values_list('pk', flat=True)
@@ -44,11 +42,28 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             for ID in kind_id:
                 if paper_id_list.count(ID) == len(tag_list):
                     match_paper_id_list.append(ID)
-
             queryset = self.queryset.filter(team=team_id, is_open=True, pk__in=match_paper_id_list)
-            
-            serializer = self.get_serializer(queryset, many=True)
-            return Response({"papers":serializer.data})
+        
+        all_tag_paper = TagPaper.objects.filter(paper__team_id=team_id)
+        all_anotation = Annotation.objects.filter(paper__team_id=team_id)
+        all_comment = Comment.objects.filter(annotation_id__in=all_anotation)
+        all_user = User.objects.filter(team_id=team_id)
+        
+        serializer = self.get_serializer(queryset, many=True)
+        for i, paper in enumerate(serializer.data):
+            paper_annotation = all_anotation.filter(paper_id=paper["pk"])
+            paper_comment = all_comment.filter(annotation_id__in=paper_annotation)
+            action_user_id_list = list(paper_annotation.values_list("user_id", flat=True))
+            action_user_id_list.extend(list(paper_comment.values_list("user_id", flat=True)))
+            action_user = all_user.filter(id__in=action_user_id_list)
+            user_serializer = UserSerializer(action_user, many=True)
+            serializer.data[i]["action_users"] = user_serializer.data
+            serializer.data[i]["tags"] = all_tag_paper.filter(paper_id=paper["pk"]).values_list('tag__tag', flat=True)
+            # あとで追加
+            serializer.data[i]["new_annotation_count"] = 0
+            serializer.data[i]["new_comment_count"] = 0
+
+        return Response({"papers":serializer.data})
 
     def create(self, request):
         checked_result = check_token(request.data.get('Auth', None))
