@@ -13,6 +13,7 @@ from ..serializers.PaperSerializer import PaperSerializer
 from ..serializers.TagSerializer import TagSerializer
 from ..serializers.TagPaperSerializer import TagPaperSerializer
 from ..serializers.UserSerializer import UserSerializer
+from ..serializers.WatchSerializer import WatchSerializer
 from ..consts import bucket, bucket_location, AWS_S3_BUCKET_NAME
 
 
@@ -120,6 +121,15 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             create_paperImage_and_upload_thread.start()
 
             link_tags(tag_list, paper_id)
+            
+            # 論文アップロード者はwatchする
+            watch_data = {
+                "user_id":user_id,
+                "paper_id":serializer.data["pk"]
+            }
+            watch_serializer = WatchSerializer(data=watch_data)
+            watch_serializer.is_valid()
+            watch_serializer.save()
 
             return Response({"status":True}, status=status.HTTP_201_CREATED, headers=headers)
         else:

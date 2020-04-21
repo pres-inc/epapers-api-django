@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from .AuthTokenCheck import check_token
 from ..models import Comment
 from ..serializers.AnnotationCommentSerializer import AnnotationCommentSerializer
+from ..serializers.WatchSerializer import WatchSerializer
 from ..consts import bucket, bucket_location, AWS_S3_BUCKET_NAME
 
 class AnnotationCommentAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
@@ -51,6 +52,15 @@ class AnnotationCommentAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         serializer = self.get_serializer(data=request_data)
         if serializer.is_valid(raise_exception=True):
             self.perform_create(serializer)
+            
+            watch_data = {
+                "user_id": request.data.get("user_id"),
+                "paper_id": serializer.data["annotation"]["paper"]["pk"]
+            }
+            watch_serializer = WatchSerializer(data=watch_data)
+            watch_serializer.is_valid()
+            watch_serializer.save()
+
             headers = self.get_success_headers(serializer.data)
             return Response({"status":True}, status=status.HTTP_201_CREATED, headers=headers)
         else:
