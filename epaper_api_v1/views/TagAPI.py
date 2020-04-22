@@ -20,7 +20,7 @@ class TagAPI(generics.ListCreateAPIView):
         tag_name = request.GET.get("tag_name")
         tag_filter = Q()
         if tag_name is not None and tag_name != "":
-            tag_filter = Q(tag__tag__contains=tag_name)
+            tag_filter = Q(tag__tag__icontains=tag_name)
 
         team_id = request.GET.get("team_id")
         # 使用されているタグから取得するので
