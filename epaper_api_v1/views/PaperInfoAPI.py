@@ -4,7 +4,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 
 from .AuthTokenCheck import check_token
-from ..models import Paper, Watch
+from ..models import Paper, Watch, AnnotationOpen, Comment
 from ..serializers.PaperInfoSerializer import PaperInfoSerializer
 
 class PaperInfoAPI(generics.ListAPIView):
@@ -32,4 +32,16 @@ class PaperInfoAPI(generics.ListAPIView):
         
         serializer_data = dict(serializer.data)
         serializer_data["is_watch"] = Watch.objects.filter(user_id=user_id, paper_id=paper_id, is_watch=True).count() > 0
+        paper_annotation_open = AnnotationOpen.objects.filter(user_id=user_id, annotation__paper_id=paper_id)
+        paper_comment = Comment.objects.filter(annotation__paper_id=paper_id, is_open=True)
+
+        for i, annotation in enumerate(serializer_data["annotations"]):
+            if serializer_data["is_watch"]:
+                latest_annotation_open = paper_annotation_open.filter(annotation_id=annotation["pk"]).order_by("-created_at").first()
+                if latest_annotation_open is None:
+                    serializer_data["annotations"][i]["unread_count"] = paper_comment.exclude(user_id=user_id).filter(annotation_id=annotation["pk"]).count()
+                else:
+                    serializer_data["annotations"][i]["unread_count"] = paper_comment.exclude(user_id=user_id).filter(created_at__gte=latest_annotation_open.created_at, annotation_id=annotation["pk"]).count()
+            else:
+                serializer_data["annotations"][i]["unread_count"] = 0                
         return Response(serializer_data)
