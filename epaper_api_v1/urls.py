@@ -14,6 +14,8 @@ from .views.TeamAPI import TeamAPI
 from .views.AnnotationDeleteAPI import AnnotationDeleteAPI
 from .views.TagAPI import TagAPI
 from .views.WatchAPI import WatchAPI
+from .views.PaperOpenAPI import PaperOpenAPI
+from .views.AnnotationOpenAPI import AnnotationOpenAPI
 
 router = routers.DefaultRouter()
 urlpatterns = {
@@ -28,7 +30,9 @@ urlpatterns = {
     path('team/', TeamAPI.as_view()),
     path('team/paper/annotation/delete/', AnnotationDeleteAPI.as_view()),
     path('team/tag/', TagAPI.as_view()),
-    path('team/paper/watch/', WatchAPI.as_view())
+    path('team/paper/watch/', WatchAPI.as_view()),
+    path('team/paper/open/', PaperOpenAPI.as_view()),
+    path('team/paper/annotation/open/', AnnotationOpenAPI.as_view()),
 }
 urlpatterns = urlp.format_suffix_patterns(urlpatterns)
 urlpatterns += router.urls

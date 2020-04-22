@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Team, User, Paper, PaperImage, Annotation, Comment, Token, Tag, TagPaper, Watch
+from .models import Team, User, Paper, PaperImage, Annotation, Comment, Token, Tag, TagPaper, Watch, PaperOpen, AnnotationOpen
 
 @admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
@@ -39,5 +39,13 @@ class TagPaperAdmin(admin.ModelAdmin):
 
 @admin.register(Watch)
 class WatchAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(PaperOpen)
+class PaperOpenAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(AnnotationOpen)
+class AnnotationOpenAdmin(admin.ModelAdmin):
     pass
 

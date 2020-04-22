@@ -68,3 +68,13 @@ class Watch(models.Model):
     paper = models.ForeignKey('Paper', on_delete=models.CASCADE, related_name="watch_paper_id", null=True, blank=True, default=None)
     is_watch = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+class PaperOpen(models.Model):
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="PaperOpen_user_id")
+    paper = models.ForeignKey('Paper', on_delete=models.CASCADE, related_name="Paper_Open_paper_id", null=True, blank=True, default=None)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class AnnotationOpen(models.Model):
+    user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="AnnotationPaper_user_id")
+    annotation = models.ForeignKey('Annotation', on_delete=models.CASCADE, related_name="AnnotationPaper_annotation_id", null=True, blank=True, default=None)
+    created_at = models.DateTimeField(auto_now_add=True)
