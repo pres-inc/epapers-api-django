@@ -18,7 +18,7 @@ class WatchAPI(generics.CreateAPIView):
             return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
         user_id = request.data.get("user_id")
         paper_id = request.data.get("paper_id")
-        instance = self.queryset.get(user_id=user_id, paper_id=paper_id)
+        instance = self.queryset.filter(user_id=user_id, paper_id=paper_id).first()
         if instance is None:
             serializer = self.get_serializer(data=request.data)
             if serializer.is_valid(raise_exception=True):
