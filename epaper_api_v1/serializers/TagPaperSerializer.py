@@ -16,7 +16,6 @@ class TagPaperSerializer(serializers.ModelSerializer):
     
     def create(self, validated_date):
 
-        print(validated_date)
         validated_date['tag'] = validated_date.get('tag_id', None)
         validated_date['paper'] = validated_date.get('paper_id', None)
 
