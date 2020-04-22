@@ -4,7 +4,7 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 
 from .AuthTokenCheck import check_token
-from ..models import Annotation
+from ..models import Annotation, Watch
 from ..serializers.AnnotationSerializer import AnnotationSerializer
 from ..serializers.PaperInfoSerializer import AnnotationSerializerForPaperInfo
 from ..serializers.WatchSerializer import WatchSerializer
@@ -40,13 +40,14 @@ class AnnotationAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
             
-            watch_data = {
-                "user_id": request.data.get("user_id"),
-                "paper_id": request.data.get("paper_id")
-            }
-            watch_serializer = WatchSerializer(data=watch_data)
-            watch_serializer.is_valid()
-            watch_serializer.save()
+            if Watch.objects.filter(user_id=request.data.get("user_id"), paper_id=request.data.get("paper_id")).count() == 0:
+                watch_data = {
+                    "user_id": request.data.get("user_id"),
+                    "paper_id": request.data.get("paper_id")
+                }
+                watch_serializer = WatchSerializer(data=watch_data)
+                watch_serializer.is_valid()
+                watch_serializer.save()
 
             return Response({"status":True}, status=status.HTTP_201_CREATED, headers=headers)
         else:

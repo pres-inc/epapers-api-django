@@ -52,7 +52,7 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         all_comment = Comment.objects.filter(annotation_id__in=all_anotation, is_open=True)
         all_user = User.objects.filter(team_id=team_id)
 
-        user_watch_list = Watch.objects.filter(user_id=user_id).values_list("paper_id", flat=True)
+        user_watch_list = Watch.objects.filter(user_id=user_id, is_watch=True).values_list("paper_id", flat=True)
         
         my_papers = []
         other_papers = []

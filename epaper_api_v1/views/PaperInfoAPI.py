@@ -31,5 +31,5 @@ class PaperInfoAPI(generics.ListAPIView):
             return Response({"status":False, "details":"You do not have permission to view."}, status=status.HTTP_400_BAD_REQUEST)
         
         serializer_data = dict(serializer.data)
-        serializer_data["is_watch"] = Watch.objects.filter(user_id=user_id, paper_id=paper_id).count() > 0
+        serializer_data["is_watch"] = Watch.objects.filter(user_id=user_id, paper_id=paper_id, is_watch=True).count() > 0
         return Response(serializer_data)

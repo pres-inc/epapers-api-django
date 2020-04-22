@@ -66,4 +66,5 @@ class TagPaper(models.Model):
 class Watch(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name="watch_user_id")
     paper = models.ForeignKey('Paper', on_delete=models.CASCADE, related_name="watch_paper_id", null=True, blank=True, default=None)
+    is_watch = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

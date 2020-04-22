@@ -9,7 +9,7 @@ class WatchSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Watch
-        fields = ('pk', 'user_id', 'paper_id', 'created_at')
+        fields = ('pk', 'user_id', 'paper_id', 'is_watch','created_at')
         read_only_fields = ('created_at', )
 
     def create(self, validated_date):
