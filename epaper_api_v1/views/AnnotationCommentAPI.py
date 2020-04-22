@@ -1,12 +1,14 @@
 import os
 import base64
 import uuid
+import datetime
+import pytz
 
 from rest_framework import generics, status
 from rest_framework.response import Response
 
 from .AuthTokenCheck import check_token
-from ..models import Comment, Watch
+from ..models import Comment, Watch, AnnotationOpen
 from ..serializers.AnnotationCommentSerializer import AnnotationCommentSerializer
 from ..serializers.WatchSerializer import WatchSerializer
 from ..consts import bucket, bucket_location, AWS_S3_BUCKET_NAME
@@ -22,11 +24,26 @@ class AnnotationCommentAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         checked_result = check_token(request.GET.get('Auth', None))
         if not checked_result["status"]:
             return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+        user_id = request.GET.get("user_id")
+        if user_id is None or user_id == "":
+            return Response({"status":False, "details":"user_id required."}, status=status.HTTP_400_BAD_REQUEST)
 
         annotation_id = request.GET.get('annotation_id', None)
         queryset = self.filter_queryset(self.get_queryset(annotation_id))
 
         serializer = self.get_serializer(queryset, many=True)
+        latest_annotation_open = AnnotationOpen.objects.filter(user_id=user_id, annotation_id=annotation_id).order_by("-created_at").first()
+        for i, comment in enumerate(serializer.data):
+            if comment["user"]["id"] == user_id:
+                serializer.data[i]["is_read"] = True
+            else:
+                if latest_annotation_open is None:
+                    serializer.data[i]["is_read"] = False
+                else:
+                    jst = pytz.timezone("Japan")
+                    comment_created_at = datetime.datetime.strptime(comment["created_at"].split("+")[0], '%Y-%m-%dT%H:%M:%S.%f')
+                    comment_created_at = comment_created_at - datetime.timedelta(hours=int(comment["created_at"].split("+")[1].split(":")[0]))
+                    serializer.data[i]["is_read"] = comment_created_at.replace(tzinfo=jst) < latest_annotation_open.created_at.replace(tzinfo=jst)
         return Response({"comments":serializer.data})
 
     def create(self, request):
