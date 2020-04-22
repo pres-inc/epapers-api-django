@@ -172,6 +172,8 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             return Response({"status":False, "details":"paper_id is required."}, status=status.HTTP_400_BAD_REQUEST)
         
         instance = self.queryset.get(pk=paper_id)
+        if instance.user.id != request.data.get("user_id"):
+            return Response({"status":False, "details":"user_id faild"}, status=status.HTTP_400_BAD_REQUEST)
 
         tags = request.data.get("tags")
         if tags is not None and tags != "":
@@ -183,15 +185,14 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         if title is not None and title != "":
             request_data["title"] = title
 
-        if instance.user.id == request.data.get("user_id"):
-            serializer = self.get_serializer(instance, data=request_data, partial=True)
-            if serializer.is_valid(raise_exception=True):
-                self.perform_update(serializer)
-                return Response({"status":True}, status=status.HTTP_202_ACCEPTED)
-            else:
-                return Response({"status":False}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = self.get_serializer(instance, data=request_data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            self.perform_update(serializer)
+            return Response({"status":True}, status=status.HTTP_202_ACCEPTED)
         else:
-            return Response({"status":False, "details":"user_id faild"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"status":False}, status=status.HTTP_400_BAD_REQUEST)
+        
 
 def create_paperImage_and_upload(save_dir_path, pdf_file_path, team_id, paper_id, title):
     
