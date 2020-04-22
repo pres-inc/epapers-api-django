@@ -52,11 +52,11 @@ class AnnotationCommentAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         serializer = self.get_serializer(data=request_data)
         if serializer.is_valid(raise_exception=True):
             self.perform_create(serializer)
-            
-            if Watch.objects.filter(user_id=request.data.get("user_id"), paper_id=serializer.data["annotation"]["paper"]["pk"]).count() == 0:
+            instance = self.queryset.get(pk=serializer.data["pk"])
+            if Watch.objects.filter(user_id=request.data.get("user_id"), paper_id=instance.annotation.paper.id).count() == 0:
                 watch_data = {
                     "user_id": request.data.get("user_id"),
-                    "paper_id": serializer.data["annotation"]["paper"]["pk"]
+                    "paper_id": instance.annotation.paper.id
                 }
                 watch_serializer = WatchSerializer(data=watch_data)
                 watch_serializer.is_valid()

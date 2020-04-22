@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from pdf2image import convert_from_path
 
 from .AuthTokenCheck import check_token
-from ..models import Paper, PaperImage, Tag, TagPaper, Comment, Annotation, User, Watch
+from ..models import Paper, PaperImage, Tag, TagPaper, Comment, Annotation, User, Watch, PaperOpen, AnnotationOpen
 from ..serializers.PaperSerializer import PaperSerializer
 from ..serializers.TagSerializer import TagSerializer
 from ..serializers.TagPaperSerializer import TagPaperSerializer
@@ -48,9 +48,11 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             queryset = self.queryset.filter(team=team_id, is_open=True, pk__in=match_paper_id_list)
         
         all_tag_paper = TagPaper.objects.filter(paper__team_id=team_id)
-        all_anotation = Annotation.objects.filter(paper__team_id=team_id, is_open=True)
-        all_comment = Comment.objects.filter(annotation_id__in=all_anotation, is_open=True)
+        all_annotation = Annotation.objects.filter(paper__team_id=team_id, is_open=True)
+        all_comment = Comment.objects.filter(annotation_id__in=all_annotation, is_open=True)
         all_user = User.objects.filter(team_id=team_id)
+        all_paper_open = PaperOpen.objects.filter(paper__team_id=team_id, user_id=user_id)
+        all_annotation_open = AnnotationOpen.objects.filter(annotation_id__in=all_annotation, user_id=user_id)
 
         user_watch_list = Watch.objects.filter(user_id=user_id, is_watch=True).values_list("paper_id", flat=True)
         
@@ -58,7 +60,7 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         other_papers = []
         serializer = self.get_serializer(queryset, many=True)
         for i, paper in enumerate(serializer.data):
-            paper_annotation = all_anotation.filter(paper_id=paper["pk"])
+            paper_annotation = all_annotation.filter(paper_id=paper["pk"])
             paper_comment = all_comment.filter(annotation_id__in=paper_annotation)
             action_user_id_list = list(paper_annotation.values_list("user_id", flat=True))
             action_user_id_list.extend(list(paper_comment.values_list("user_id", flat=True)))
@@ -83,9 +85,15 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             serializer.data[i]["latest_actioned_at"] = latest_actioned_at
 
             if paper["pk"] in user_watch_list:
+                latest_paper_open = all_paper_open.filter(paper_id=paper["pk"], user_id=user_id).order_by("-created_at").first()
+                new_annotation_count = 0
+                if latest_paper_open is not None:
+                    new_annotation_count = all_annotation.exclude(user_id=user_id).filter(paper_id=paper["pk"], created_at__gte=latest_paper_open.created_at, is_open=True).count()
+                
+                new_comment_count = get_new_comment_count(all_annotation, all_comment, all_annotation_open, paper["pk"], user_id)
                 # 通知数計算をやる
-                serializer.data[i]["new_annotation_count"] = 1
-                serializer.data[i]["new_comment_count"] = 1
+                serializer.data[i]["new_annotation_count"] = new_annotation_count
+                serializer.data[i]["new_comment_count"] = new_comment_count
                 my_papers.append(serializer.data[i])
             else:
                 serializer.data[i]["new_annotation_count"] = 0
@@ -234,3 +242,14 @@ def update_TagPaper(tag_list, paper_id):
             tag_list.remove(tag_paper.tag.tag)
 
     link_tags(tag_list, paper_id)
+
+def get_new_comment_count(all_annotation, all_comment, all_annotation_open, paper_id, user_id):
+    paper_annotation = all_annotation.filter(paper_id=paper_id)
+    new_comment_count = 0
+    for annotation in paper_annotation:
+        latest_annotation_open = all_annotation_open.filter(annotation_id=annotation.pk).order_by("-created_at").first()
+        if latest_annotation_open is None:
+            new_comment_count += all_comment.exclude(user_id=user_id).filter(annotation_id=annotation.pk).count()
+        else:
+            new_comment_count += all_comment.exclude(user_id=user_id).filter(annotation_id=annotation.pk, created_at__gte=latest_annotation_open.created_at).count()
+    return new_comment_count
