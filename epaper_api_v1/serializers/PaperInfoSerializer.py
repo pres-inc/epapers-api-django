@@ -80,7 +80,7 @@ class PaperInfoSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_annotationed_users(self, obj):
-        user_id_list = Annotation.objects.filter(paper=obj.pk).values_list('user', flat=True)
+        user_id_list = Annotation.objects.filter(paper=obj.pk, is_open=True).values_list('user', flat=True)
         serializer = UserSerializerForPaper(User.objects.filter(id__in=user_id_list), many=True)
         for i,data in enumerate(serializer.data):
             annotaton_count = Annotation.objects.filter(user_id=data["id"], paper_id=obj.pk, is_open=True).count()
