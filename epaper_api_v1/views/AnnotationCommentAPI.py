@@ -41,8 +41,9 @@ class AnnotationCommentAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
                     serializer.data[i]["is_read"] = False
                 else:
                     jst = pytz.timezone("Japan")
-                    comment_created_at = datetime.datetime.strptime(comment["created_at"].split("+")[0], '%Y-%m-%dT%H:%M:%S.%f')
-                    comment_created_at = comment_created_at - datetime.timedelta(hours=int(comment["created_at"].split("+")[1].split(":")[0]))
+                    comment_created_at = datetime.datetime.strptime(comment["created_at"].split(".")[0], '%Y-%m-%dT%H:%M:%S')
+                    comment_created_at = comment_created_at - datetime.timedelta(hours=9)
+                    # comment_created_at = comment_created_at - datetime.timedelta(hours=int(comment["created_at"].split("+")[1].split(":")[0]))
                     serializer.data[i]["is_read"] = comment_created_at.replace(tzinfo=jst) < latest_annotation_open.created_at.replace(tzinfo=jst)
         return Response({"comments":serializer.data})
 
