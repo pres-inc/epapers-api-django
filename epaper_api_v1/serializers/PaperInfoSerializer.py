@@ -23,7 +23,7 @@ class AnnotationSerializerForPaperInfo(serializers.ModelSerializer):
         fields = ('pk', 'memo', 'comment_count', 'x0', 'y0', 'x1', 'y1', 'user', 'page')
 
     def get_comment_count(self, obj):
-        return Comment.objects.filter(annotation=obj.pk).count()
+        return Comment.objects.filter(annotation=obj.pk, is_open=True).count()
     
     def get_x0(self, obj):
         return float(obj.coordinate.split(",")[0])
