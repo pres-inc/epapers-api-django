@@ -100,14 +100,12 @@ class AnnotationCommentAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         instance = self.queryset.get(pk=comment_id)
         request_data = {}
         if new_comment != "":
-            if instance.comment == "":
-                return Response({"status":False, "details":"this comment is image"}, status=status.HTTP_400_BAD_REQUEST)
             request_data["comment"] = new_comment
+            request_data["image_url"] = ""
         elif new_image_base64 != "":
-            if instance.image_url == "":
-                return Response({"status":False, "details":"this comment is text"}, status=status.HTTP_400_BAD_REQUEST)
             url = create_comment_image_url(new_image_base64, "jpg")
             request_data["image_url"] = url
+            request_data["comment"] = ""
 
         if instance.user.id == user_id:
             serializer = self.get_serializer(instance, data=request_data, partial=True)
