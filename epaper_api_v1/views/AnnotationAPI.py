@@ -1,4 +1,6 @@
 import os
+import base64
+import uuid
 
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -8,6 +10,7 @@ from ..models import Annotation, Watch
 from ..serializers.AnnotationSerializer import AnnotationSerializer
 from ..serializers.PaperInfoSerializer import AnnotationSerializerForPaperInfo
 from ..serializers.WatchSerializer import WatchSerializer
+from ..consts import bucket, bucket_location, AWS_S3_BUCKET_NAME
 
 
 class AnnotationAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
@@ -34,8 +37,26 @@ class AnnotationAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         checked_result = check_token(request.data.get('Auth', None))
         if not checked_result["status"]:
             return Response({"status":False, "details":"Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        memo = request.data.get("memo", None)
+        image_base64 = request.data.get("image_base64", None)
+        if (memo is None or memo == "") and (image_base64 is None or image_base64 == ""):
+            return Response({"status":False, "details": "memo or image_url is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = self.get_serializer(data=request.data)
+        image_url = ""
+        if image_base64 is not None and image_base64 != "":
+            image_url = create_comment_image_url(image_base64, "jpg")
+        
+        request_data = {
+            "user_id": request.data.get("user_id"),
+            "page": request.data.get("page"),
+            "paper_id": request.data.get("paper_id"),
+            "coordinate": request.data.get("coordinate"),
+            "memo": request.data.get("memo", ""),
+            "image_url": image_url
+        }
+
+        serializer = self.get_serializer(data=request_data)
         if serializer.is_valid(raise_exception=True):
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
@@ -64,9 +85,18 @@ class AnnotationAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         request_data = {
             "user_id": instance.user.id,
         }
-        memo = request.data.get("memo")
-        if  memo is not None and memo != "":
-            request_data["memo"] = memo
+
+        memo = request.data.get("memo", None)
+        image_base64 = request.data.get("image_base64", None)
+        if (memo is None or memo == "") and (image_base64 is None or image_base64 == ""):
+            return Response({"status":False, "details": "memo or image_url is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        image_url = ""
+        if image_base64 is not None and image_base64 != "":
+            image_url = create_comment_image_url(image_base64, "jpg")
+        
+        request_data["image_url"] = image_url
+        request_data["memo"] = request.data.get("memo", "")
 
         coordinate = request.data.get("coordinate")
         if  coordinate is not None and coordinate != "":
@@ -84,3 +114,8 @@ class AnnotationAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
         else:
             return Response({"status":False, "details":"user_id faild"}, status=status.HTTP_400_BAD_REQUEST)
         
+def create_comment_image_url(image_base64, extension):
+    s3key = 'memo/' + str(uuid.uuid4()) + '.' + extension
+    bucket.put_object(Key=s3key, Body=base64.b64decode(image_base64.encode("UTF-8")), ContentType='image/'+extension)
+
+    return "https://s3-{0}.amazonaws.com/{1}/{2}".format(bucket_location['LocationConstraint'], AWS_S3_BUCKET_NAME, s3key)
