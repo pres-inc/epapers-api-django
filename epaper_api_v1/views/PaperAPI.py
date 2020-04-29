@@ -122,6 +122,7 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             "title": title,
             "team_id": team_id,
             "user_id": user_id,
+            "is_uploaded": False
         }
 
         serializer = self.get_serializer(data=request_data)
@@ -207,6 +208,12 @@ def create_paperImage_and_upload(save_dir_path, pdf_file_path, team_id, paper_id
         PaperImage.objects.create(page=i, url=url, paper_id=paper_id)
     # save_dir_path以下のファイルやフォルダを全て削除
     shutil.rmtree(save_dir_path)
+
+    # 論文画像のアップロード完了パラメータをtrueにする
+    paper_instance = Paper.objects.get(pk=paper_id)
+    paper_serializer = PaperSerializer(paper_instance, data={"is_uploaded":True}, partial=True)
+    paper_serializer.is_valid()
+    paper_serializer.save()
 
 def create_tags(tag_list, team_id):
     for tag in tag_list:

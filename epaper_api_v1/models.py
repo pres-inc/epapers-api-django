@@ -30,6 +30,7 @@ class Paper(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     thumbnail_url = models.CharField(max_length=300, default="", blank=True) # 一旦使わない
     is_open = models.BooleanField(default=True)
+    is_uploaded = models.BooleanField(default=True)
     #auters = models.CharField(max_length=300, default="") # 一旦使わない
 
 class PaperImage(models.Model):
