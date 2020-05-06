@@ -1,8 +1,17 @@
 asgiref==3.2.5
+boto3==1.12.23
+botocore==1.15.23
 Django==3.0.4
+django-cors-headers==3.2.1
 djangorestframework==3.11.0
+docutils==0.15.2
+jmespath==0.9.5
 mysqlclient==1.4.6
 pdf2image==1.12.1
 Pillow==7.0.0
+python-dateutil==2.8.1
 pytz==2019.3
+s3transfer==0.3.3
+six==1.14.0
 sqlparse==0.3.1
+urllib3==1.25.8

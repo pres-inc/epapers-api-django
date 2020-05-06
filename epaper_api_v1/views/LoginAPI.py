@@ -1,11 +1,11 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
-from ..models import User
+from ..models import User, Token, Team
 from ..serializers.UserSerializer import UserSerializer
+from ..consts import LOGIN_TIME
 
 import datetime
-
-login_time = 60 * 60 * 24
+import hashlib
 
 class LoginAPI(generics.RetrieveAPIView):
     queryset = User.objects.all()
@@ -20,15 +20,29 @@ class LoginAPI(generics.RetrieveAPIView):
         if user.count() != 1:
             return Response({"status":False, "details":"Please enter the correct email address and password."}, status=status.HTTP_400_BAD_REQUEST)
         serializer = self.get_serializer(user[0])
-        login_limit = datetime.datetime.now().timestamp() + login_time
-        serializer.data.update(login_limit=login_limit)
+        login_limit = datetime.datetime.now().timestamp() + LOGIN_TIME
+
+        # token 生成
+        str = mail + password + datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
+        hash = hashlib.sha1(str.encode('utf-8')).hexdigest()
+        user_token = Token.objects.filter(user_id=serializer.data["id"])
+        if user_token.count() != 1:
+            Token.objects.create(user_id=serializer.data["id"], token=hash)
+        else:
+            user_token = Token.objects.get(user_id=serializer.data["id"])
+            user_token.token = hash
+            user_token.save()
+
+        team_name = Team.objects.get(pk=serializer.data["team_id"]).name
         result_data = {
             "login_limit": int(login_limit),
+            "token": hash,
             "id": serializer.data["id"],
             "name": serializer.data["name"],
             "mail": serializer.data["mail"],
             "color": serializer.data["color"],
             "team_id": serializer.data["team_id"],
+            "team_name": team_name,
             "is_owner": serializer.data["is_owner"]
         }
         return Response(result_data)

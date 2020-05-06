@@ -1,16 +1,15 @@
 from rest_framework import serializers
-from ..models import User, Team
+from ..models import Tag, Team
 
 
-class UserSerializer(serializers.ModelSerializer):
+class TagSerializer(serializers.ModelSerializer):
+    pk = serializers.SerializerMethodField()
     team_id = serializers.PrimaryKeyRelatedField(queryset=Team.objects.all())
+    
     class Meta:
-        model = User
-        fields = ('id', 'name', 'mail', 'password', 'color', 'team_id', 'is_owner', 'created_at')
-        read_only_fields = ('created_at',)
-        extra_kwargs = {
-            'password': {'write_only': True}
-        }
+        model = Tag
+        fields = ('pk', 'tag', 'team_id', 'created_at')
+        read_only_fields = ('created_at', )
 
     def create(self, validated_date):
 
@@ -21,5 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
 
         del validated_date['team_id']
 
-        return User.objects.create(**validated_date)
-    
+        return Tag.objects.create(**validated_date)
+
+    def get_pk(self, obj):
+        return int(obj.pk)
