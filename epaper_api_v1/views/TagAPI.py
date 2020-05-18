@@ -23,11 +23,11 @@ class TagAPI(generics.ListCreateAPIView):
             tag_filter = Q(tag__tag__icontains=tag_name)
 
         team_id = request.GET.get("team_id")
-        # 使用されているタグから取得するので
-        tag_id_list = list(set(TagPaper.objects.filter(Q(paper__team__pk=team_id) & tag_filter).values_list('tag', flat=True)))
+        # paper__is_openの中で使用されているタグから取得するので
+        tag_id_list = list(set(TagPaper.objects.exclude(paper__is_open=False).filter(Q(paper__team__pk=team_id) & tag_filter).values_list('tag', flat=True)))
         queryset = self.queryset.filter(pk__in=tag_id_list, team_id=team_id)
         serializer = self.get_serializer(queryset, many=True)
-        all_tag_paper = TagPaper.objects.filter(paper__team__pk=team_id)
+        all_tag_paper = TagPaper.objects.filter(paper__team__pk=team_id, paper__is_open=True)
         for i, tag in enumerate(serializer.data):
             serializer.data[i]["use_count"] = all_tag_paper.filter(tag_id=tag["pk"]).count()
             
