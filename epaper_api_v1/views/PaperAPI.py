@@ -64,6 +64,8 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             paper_comment = all_comment.filter(annotation_id__in=paper_annotation)
             action_user_id_list = list(paper_annotation.values_list("user_id", flat=True))
             action_user_id_list.extend(list(paper_comment.values_list("user_id", flat=True)))
+            # 論文投稿ユーザは自動でaction_userになる
+            action_user_id_list.append(serializer.data[i]["user"]["id"])
             action_user = all_user.filter(id__in=action_user_id_list)
             user_serializer = UserSerializer(action_user, many=True)
             serializer.data[i]["action_users"] = user_serializer.data

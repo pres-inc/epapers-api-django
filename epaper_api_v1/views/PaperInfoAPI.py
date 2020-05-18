@@ -49,16 +49,13 @@ class PaperInfoAPI(generics.ListAPIView):
             else:
                 serializer_data["annotations"][i]["unread_count"] = 0
 
-            # print(annotation["created_at"])
             if annotation["user"]["id"] == user_id:
                 serializer_data["annotations"][i]["is_read"] = True
             else:
                 if latest_paper_open is not None:
-                    print(paper_open_serializer.data)
                     latest_paper_open_created_at = datetime.strptime(paper_open_serializer.data["created_at"].split(".")[0], '%Y-%m-%dT%H:%M:%S')
                     annotation_created_at = datetime.strptime(annotation["created_at"].split(".")[0], '%Y-%m-%dT%H:%M:%S')
                     
-                    # print(latest_paper_open.created_at)
                     serializer_data["annotations"][i]["is_read"] = annotation_created_at < latest_paper_open_created_at
                 else:
                     serializer_data["annotations"][i]["is_read"] = False
