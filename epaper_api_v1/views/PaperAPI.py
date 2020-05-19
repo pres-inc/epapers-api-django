@@ -76,7 +76,10 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             latest_my_comment = paper_comment.filter(user_id=user_id).order_by("created_at").first()
             
             if latest_my_annotation is None and latest_my_comment is None:
-                latest_actioned_at = None
+                if paper["user"]["id"] == user_id:
+                    latest_actioned_at = self.queryset.get(pk=paper["pk"]).created_at
+                else:
+                    latest_actioned_at = None
             elif latest_my_annotation is not None and latest_my_comment is None:
                 latest_actioned_at = latest_my_annotation.created_at
             elif latest_my_annotation is None and latest_my_comment is not None:
