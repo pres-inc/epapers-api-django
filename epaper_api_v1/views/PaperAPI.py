@@ -182,7 +182,7 @@ class PaperAPI(generics.UpdateAPIView, generics.ListCreateAPIView):
             return Response({"status":False, "details":"user_id faild"}, status=status.HTTP_400_BAD_REQUEST)
 
         tags = request.data.get("tags")
-        if tags is not None and tags != "":
+        if tags is not None:
             tag_list = list(filter(lambda x: x != "", tags.split(",")))
             create_tags(tag_list, instance.team_id)
             update_TagPaper(tag_list, paper_id)
